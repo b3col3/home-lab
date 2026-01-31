@@ -1,0 +1,19 @@
+services:
+  n8n:
+    container_name: "n8n"
+    image: "n8nio/n8n:latest"
+    restart: "unless-stopped"
+    ports:
+      - "5678:5678"
+    environment:
+      - "GENERIC_TIMEZONE=Europe/Paris"
+      - "TZ=Europe/Paris"
+      - "NODES_EXCLUDE=[]"
+      - "NODE_FUNCTION_ALLOW_BUILTIN=fs"
+    volumes:
+      - "n8n_data:/home/node/.n8n"
+      - "$HOME/Vidéos:/home/node/.n8n-files/videos"
+
+volumes:
+  n8n_data:
+    name: n8n_data
