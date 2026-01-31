@@ -1,0 +1,21 @@
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest
+    container_name: "adguard"
+    restart: "unless-stopped"
+    ports:
+      - "53:53/tcp" # DNS
+      - "53:53/udp" # DNS
+      - "3000:3000/tcp" # Interface web initiale (première configuration)
+      - "80:80/tcp" # Interface web (après configuration)
+      - "443:443/tcp" # Interface web HTTPS
+      - "853:853/tcp" # DNS-over-TLS
+      # - "784:784/udp"  # DNS-over-QUIC (optionnel)
+      # - "8853:8853/udp" # DNS-over-QUIC (optionnel)
+      # - "5443:5443/tcp" # DNSCrypt (optionnel)
+      # - "5443:5443/udp" # DNSCrypt (optionnel)
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    environment:
+      - TZ=Europe/Paris # Ajustez selon votre fuseau horaire

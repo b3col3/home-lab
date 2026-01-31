@@ -1,0 +1,18 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true # Dashboard Traefik : 8080
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":80" # EntryPoint pour HTTP
+  websecure:
+    address: ":443" # EntryPoint pour HTTPS
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
