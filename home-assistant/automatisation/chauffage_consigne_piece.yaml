@@ -1,0 +1,98 @@
+blueprint:
+  name: Chauffage - Consigne d'une pièce
+  description: >
+    Régule la consigne d'un radiateur selon le planning, la présence
+    et l'interrupteur général du chauffage.
+    Priorité : chauffage coupé > absence > planning confort/éco.
+  domain: automation
+  input:
+    radiateur:
+      name: Radiateur / thermostat
+      description: Entité climate de la pièce
+      selector:
+        entity:
+          domain: climate
+    confort:
+      name: Consigne confort
+      selector:
+        entity:
+          domain: input_number
+    eco:
+      name: Consigne éco
+      selector:
+        entity:
+          domain: input_number
+    absence:
+      name: Consigne absence
+      selector:
+        entity:
+          domain: input_number
+    planning:
+      name: Planning chauffage
+      selector:
+        entity:
+          domain: schedule
+    presence:
+      name: Zone de présence
+      description: Généralement zone.home (état = nombre de personnes présentes)
+      default: zone.home
+      selector:
+        entity:
+          domain: zone
+    chauffage_actif:
+      name: Interrupteur général chauffage
+      selector:
+        entity:
+          domain: input_boolean
+    temp_hors_gel:
+      name: Température hors gel (chauffage coupé)
+      default: 7
+      selector:
+        number:
+          min: 5
+          max: 15
+          step: 0.5
+          unit_of_measurement: "°C"
+          mode: slider
+
+mode: restart
+
+variables:
+  radiateur: !input radiateur
+  confort: !input confort
+  eco: !input eco
+  absence: !input absence
+  planning: !input planning
+  presence: !input presence
+  chauffage_actif: !input chauffage_actif
+  temp_hors_gel: !input temp_hors_gel
+
+triggers:
+  - trigger: state
+    entity_id:
+      - !input planning
+      - !input presence
+      - !input chauffage_actif
+      - !input confort
+      - !input eco
+      - !input absence
+  - trigger: homeassistant
+    event: start
+
+actions:
+  - action: climate.set_temperature
+    target:
+      entity_id: !input radiateur
+    data:
+      temperature: >
+        {% if is_state(chauffage_actif, 'off') %}
+          {{ temp_hors_gel }}
+        {% elif states(presence) | int(0) > 0 %}
+          {% if is_state(planning, 'on') %}
+            {{ states(confort) | float(21) }}
+          {% else %}
+            {{ states(eco) | float(19) }}
+          {% endif %}
+        {% else %}
+          {{ states(absence) | float(16) }}
+        {% endif %}
